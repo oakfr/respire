@@ -1,0 +1,8 @@
+message Measure {
+    required int32 timestamp = 1;
+    required int32 pm2_5 = 2;
+    required int32 pm10 = 3;
+    optional double gps_lat = 4;
+    optional double gps_lon = 5;
+}
+
