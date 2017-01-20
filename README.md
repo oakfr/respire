@@ -1,18 +1,23 @@
 # README #
 
-### What is this repository for? ###
+### Content ###
 
 * Codebase for the air quality sensor of respire-asso.org
-* 0.1
 
 
-### How do I get set up? ###
+### Codebase structure ###
 
-* Dependencies
-   Python 2.7
+server/  --> code for the web server
+sensor/  --> code for the sensor/raspberry pi
+
+
+### Dependencies ###
+
+Python 2.7
+PHP
+MySQL
    
 
 ### Contact info ###
 
 Olivier Koch, olivier@olivierkoch.org
-Jeremy Castelli, contact@jeremycastelli.com
