@@ -1,0 +1,20 @@
+The RPI Sigfox board and Witty 2 board have conflicting requirements:
+
+1. The RPI Sigfox board requires to disable the console via serial port (via raspi-config).  This effectively turns down the TXD port (as can be seen with gpio readall).
+
+2. The Witty 2 board requires the TXD pin to be up.
+
+However, there seems to be a workaround:
+
+1. Disable the console on serial port via raspi-config
+2. Reboot
+3. Check that gpio readall shows 0 for the TXD pin
+4. set enable_uart=1 in /boot/config.txt
+5. Reboot
+6. Check that the TXD pin is now up via gpio readall
+7. Check that sending sigfox messages is still OK
+8. Check that the witty 2 board works
+9. Yay!
+
+Also, make sure to add the user to the dialout group.
+
