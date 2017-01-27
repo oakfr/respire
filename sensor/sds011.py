@@ -11,12 +11,17 @@ def send_particles_signal (lc):
 
     msg = part_t()
     msg.timestamp = int(time.time() * 1000000)
-    output = subprocess.check_output(["od", "--endian=big" ,"-x", "-N10", "/dev/ttyUSB0"])
-    data = output.split()[2:4]
-    rawpm25 = (data[0][:2], data[0][2:4])
-    rawpm10 = (data[1][:2], data[1][2:4])
-    pm25 = ((int(rawpm25[1],16) * 256 + int(rawpm25[0], 16)) / 10)
-    pm10 = ((int(rawpm10[1],16) * 256 + int(rawpm10[0], 16)) / 10)
+    pm10=0
+    pm25=0
+    try:
+        output = subprocess.check_output(["od", "--endian=big" ,"-x", "-N10", "/dev/ttyUSB0"])
+        data = output.split()[2:4]
+        rawpm25 = (data[0][:2], data[0][2:4])
+        rawpm10 = (data[1][:2], data[1][2:4])
+        pm25 = ((int(rawpm25[1],16) * 256 + int(rawpm25[0], 16)) / 10)
+        pm10 = ((int(rawpm10[1],16) * 256 + int(rawpm10[0], 16)) / 10)
+    except:
+        print ('*** WARNING *** failed to read data on USB port.  Using dummy data.')
     msg.pm_10 = pm10
     msg.pm_2_5 = pm25
     msg.enabled = True
