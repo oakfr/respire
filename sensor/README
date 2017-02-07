@@ -1,3 +1,5 @@
+Witty2 setup / RPI Sigfox board setup
+==================================================
 The RPI Sigfox board and Witty 2 board have conflicting requirements:
 
 1. The RPI Sigfox board requires to disable the console via serial port (via raspi-config).  This effectively turns down the TXD port (as can be seen with gpio readall).
@@ -16,5 +18,21 @@ However, there seems to be a workaround:
 8. Check that the witty 2 board works
 9. Yay!
 
-Also, make sure to add the user to the dialout group.
+Add the user to the dialout group.
+
+Wifi setup
+==================================================
+1. Install wpa-supplicant
+2. Copy the following into /etc/wpa_supplicant/wpa_supplicant.conf:
+network={
+        ssid="The_ESSID_from_earlier"
+                psk="Your_wifi_password"
+}
+3. sudo ifdown wlan0
+4. sudo ifup wlan0
+
+GPS Setup
+==================================================
+1. sudo apt-get install gpsd gpsd-clients python-gps
+
 
