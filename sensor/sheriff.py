@@ -26,12 +26,14 @@ class Sheriff ():
         return True
 
     def gps_handler(self, channel, data):
+	print ('\treceived gps message...')
         msg = gps_t.decode(data)
         self.lat = msg.lat
         self.lon = msg.lon
         self.gps_enabled = msg.enabled
 
     def pm_handler(self, channel, data):
+	print ('\treceived pm message...')
         msg = part_t.decode(data)
         self.pm_10 = msg.pm_10
         self.pm_2_5 = msg.pm_2_5
