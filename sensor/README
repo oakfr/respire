@@ -34,5 +34,5 @@ network={
 GPS Setup
 ==================================================
 1. sudo apt-get install gpsd gpsd-clients python-gps
-
+2. Run cgps -s to test GPS data
 

@@ -3,6 +3,7 @@ package exlcm;
 struct gps_t
 {
     int64_t  timestamp;
+    int64_t  gps_timestamp;
     double   lat;
     double   lon;
     boolean  enabled;

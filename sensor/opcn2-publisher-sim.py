@@ -6,7 +6,7 @@ from exlcm import part_t
 def send_particles_signal (lc):
 
     msg = part_t()
-    msg.timestamp = int(time.time() * 1000000)
+    msg.timestamp = int(time.time()
     msg.pm_10 = 20
     msg.pm_2_5 = 15
     msg.enabled = True

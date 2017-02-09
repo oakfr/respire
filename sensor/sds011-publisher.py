@@ -10,7 +10,7 @@ from exlcm import part_t
 def send_particles_signal (lc):
 
     msg = part_t()
-    msg.timestamp = int(time.time() * 1000000)
+    msg.timestamp = int(time.time())
     pm10=0
     pm25=0
     try:
