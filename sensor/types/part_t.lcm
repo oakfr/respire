@@ -3,7 +3,8 @@ package exlcm;
 struct part_t
 {
     int64_t  timestamp;
+    int32_t pm_1;
     int32_t pm_10;
-    int32_t pm_2_5;
+    int32_t pm_25;
     boolean  enabled;
 }

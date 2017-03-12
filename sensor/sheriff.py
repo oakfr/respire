@@ -7,8 +7,9 @@ from sendsigfox import Sigfox
 
 class Sheriff ():
     def __init__(self, sgfx):
+        self.pm_1 = 0
         self.pm_10 = 0
-        self.pm_2_5 = 0
+        self.pm_25 = 0
         self.lat = 0
         self.lon = 0
         self.gps_enabled=False
@@ -19,8 +20,9 @@ class Sheriff ():
         print ('writing to sigfox...')
         print ("lat =      %s" % (str(self.lat)))
         print ("lon =      %s" % (str(self.lat)))
+        print ("pm_1 =    %s" % (str(self.pm_1)))
         print ("pm_10 =    %s" % (str(self.pm_10)))
-        print ("pm_2_5 =    %s" % (str(self.pm_2_5)))
+        print ("pm_25 =    %s" % (str(self.pm_25)))
         message = "1234CAFE"
         self.sgfx.sendMessage(message)
         return True
@@ -36,7 +38,8 @@ class Sheriff ():
 	print ('\treceived pm message...')
         msg = part_t.decode(data)
         self.pm_10 = msg.pm_10
-        self.pm_2_5 = msg.pm_2_5
+        self.pm_25 = msg.pm_25
+        self.pm_1 = msg.pm_1
         self.pm_enabled = msg.enabled
 
 def main():

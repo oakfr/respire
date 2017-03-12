@@ -1,0 +1,9 @@
+package exlcm;
+
+struct gaz_t
+{
+    int64_t  timestamp;
+    int32_t no2;
+    int32_t o3;
+    boolean  enabled;
+}
