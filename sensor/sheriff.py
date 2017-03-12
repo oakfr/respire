@@ -3,6 +3,7 @@ import glib
 import gobject
 from exlcm import gps_t
 from exlcm import part_t
+from exlcm import gaz_t
 from sendsigfox import Sigfox
 
 class Sheriff ():
@@ -12,6 +13,8 @@ class Sheriff ():
         self.pm_25 = 0
         self.lat = 0
         self.lon = 0
+        self.no2 = 0
+        self.o3 = 0
         self.gps_enabled=False
         self.pm_enabled=False
         self.sgfx = sgfx
@@ -19,28 +22,37 @@ class Sheriff ():
     def send_sigfox (self):
         print ('writing to sigfox...')
         print ("lat =      %s" % (str(self.lat)))
-        print ("lon =      %s" % (str(self.lat)))
+        print ("lon =      %s" % (str(self.lon)))
         print ("pm_1 =    %s" % (str(self.pm_1)))
         print ("pm_10 =    %s" % (str(self.pm_10)))
         print ("pm_25 =    %s" % (str(self.pm_25)))
+        print ("no2 =      %s" % (str(self.no2)))
+        print ("o3 =       %s" % (str(self.o3)))
         message = "1234CAFE"
         self.sgfx.sendMessage(message)
         return True
 
     def gps_handler(self, channel, data):
-	print ('\treceived gps message...')
+        print ('\treceived gps message...')
         msg = gps_t.decode(data)
         self.lat = msg.lat
         self.lon = msg.lon
         self.gps_enabled = msg.enabled
 
     def pm_handler(self, channel, data):
-	print ('\treceived pm message...')
+        print ('\treceived pm message...')
         msg = part_t.decode(data)
         self.pm_10 = msg.pm_10
         self.pm_25 = msg.pm_25
         self.pm_1 = msg.pm_1
         self.pm_enabled = msg.enabled
+
+    def gaz_handler(self, channel, data):
+        print ('\treceived gaz message...')
+        msg = gaz_t.decode(data)
+        self.no2 = msg.no2
+        self.o3 = msg.o3
+
 
 def main():
     sgfx = Sigfox('/dev/ttyAMA0')
@@ -57,6 +69,7 @@ def main():
 
     subscription = lc.subscribe("GPS", sheriff.gps_handler)
     subscription = lc.subscribe("PM", sheriff.pm_handler)
+    subscription = lc.subscribe("GAZ", sheriff.gaz_handler)
 
     mainloop = glib.MainLoop()
     gobject.timeout_add (15000, sheriff.send_sigfox)

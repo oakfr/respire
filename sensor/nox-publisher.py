@@ -27,10 +27,13 @@ def is_valid (mes):
 
 def get_measurement (nox_reader):
     line = nox_reader.readline()
-    elements = [float(el.strip()) for el in line.split(',')]
+    try:
+        elements = [float(el.strip()) for el in line.split(',')]
+    except:
+        return (0,0,False)
     no2 = elements[-2]
     o3 = elements[-1]
-    return (no2, o3)
+    return (no2, o3, True)
 
 
 def send_gaz_signal (lc, no2, o3):
@@ -52,8 +55,9 @@ def main ():
         while True:
             if nox_reader is None:
                 nox_reader = init_nox ()
-            (no2, o3) = get_measurement (nox_reader)
-            send_gaz_signal(lc, no2, o3)
+            (no2, o3, is_valid) = get_measurement (nox_reader)
+            if is_valid:
+                send_gaz_signal(lc, no2, o3)
             time.sleep(2)
     except KeyboardInterrupt:
         pass
