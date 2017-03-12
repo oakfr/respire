@@ -12,19 +12,20 @@ def device_to_vendor (device):
         return d[0]
 
 
+def find_device (vendor):
+    for i in range(10):
+        device="USB%d"%i
+        if vendor == device_to_vendor (device):
+            return device
+    raise LookupError("ERROR: failed to find device for vendor %s" % vendor)
+    return ""
+
+
 def find_devices ():
     gps_vendor = "Cygnal Integrated Products, Inc."
     nox_vendor = "Prolific Technology, Inc."
-    gps_device = ""
-    nox_device = ""
-    for i in range(10):
-        device="USB%d"%i
-        vendor=device_to_vendor(device)
-        if vendor == gps_vendor:
-            gps_device = device
-        if vendor == nox_vendor:
-            nox_device = device
-
+    gps_device = find_device (gps_vendor)
+    nox_device = find_device (nox_vendor)
     print ("gps device = " + gps_device)
     print ("nox device = " + nox_device)
 

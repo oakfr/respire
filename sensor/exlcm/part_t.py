@@ -10,12 +10,13 @@ except ImportError:
 import struct
 
 class part_t(object):
-    __slots__ = ["timestamp", "pm_10", "pm_2_5", "enabled"]
+    __slots__ = ["timestamp", "pm_1", "pm_10", "pm_25", "enabled"]
 
     def __init__(self):
         self.timestamp = 0
+        self.pm_1 = 0
         self.pm_10 = 0
-        self.pm_2_5 = 0
+        self.pm_25 = 0
         self.enabled = False
 
     def encode(self):
@@ -25,7 +26,7 @@ class part_t(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">qiib", self.timestamp, self.pm_10, self.pm_2_5, self.enabled))
+        buf.write(struct.pack(">qiiib", self.timestamp, self.pm_1, self.pm_10, self.pm_25, self.enabled))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -39,7 +40,7 @@ class part_t(object):
 
     def _decode_one(buf):
         self = part_t()
-        self.timestamp, self.pm_10, self.pm_2_5 = struct.unpack(">qii", buf.read(16))
+        self.timestamp, self.pm_1, self.pm_10, self.pm_25 = struct.unpack(">qiii", buf.read(20))
         self.enabled = bool(struct.unpack('b', buf.read(1))[0])
         return self
     _decode_one = staticmethod(_decode_one)
@@ -47,7 +48,7 @@ class part_t(object):
     _hash = None
     def _get_hash_recursive(parents):
         if part_t in parents: return 0
-        tmphash = (0x2bf36e01ca54d7e1) & 0xffffffffffffffff
+        tmphash = (0xdf4a4540a89ddd11) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

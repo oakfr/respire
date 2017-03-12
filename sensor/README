@@ -31,8 +31,16 @@ network={
 3. sudo ifdown wlan0
 4. sudo ifup wlan0
 
+Binding devices to /dev paths
+==================================================
+Add the following lines to /etc/udev/rules/10-usb.rules
+SUBSYSTEMS=="usb", KERNEL=="ttyUSB*", ATTRS{manufacturer}=="Prolific Technology Inc. ", SYMLINK+="gps"
+SUBSYSTEMS=="usb", KERNEL=="ttyUSB*", ATTRS{manufacturer}=="Silicon Labs", SYMLINK+="nox"
+
 GPS Setup
 ==================================================
 1. sudo apt-get install gpsd gpsd-clients python-gps
 2. Run cgps -s to test GPS data
+Modify/ add this line to /etc/default/gpsd 
+DEVICES="/dev/gps"
 

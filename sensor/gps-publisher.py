@@ -63,25 +63,16 @@ def publish_msg (lat, lon, gps_timestamp, enabled):
 
 def send_gps_signal (lc, lat, lon):
     """ send LCM signal with GPS data """
-    gps_data_filename = '/home/pi/gps_data.txt'
+    #gps_data_filename = '/home/pi/gps_data.txt'
     time_now = int(time.time())
     if is_valid_data (lat, lon):
         # gps data is valid, publish it and save it to file
         gps_timestamp = time_now
         publish_msg (lat, lon, gps_timestamp, True)
-        write_gps_data_to_file (gps_data_filename, lat, lon, gps_timestamp)
+        #write_gps_data_to_file (gps_data_filename, lat, lon, gps_timestamp)
         print ("[gps] GPS OK.  lat = %.5f, lon = %.5f" % (lat, lon))
     else:
-        # try to read from file
-        (lat, lon, gps_timestamp, is_valid) = read_gps_data_from_file (gps_data_filename)
-        if is_valid:
-            # gps data is invalid, read it from file
-            publish_msg (lat, lon, gps_timestamp, False)
-            delta_hours = (time_now - gps_timestamp)*1.0 / 3600
-            print ("[gps] GPS DOWN.  Fallback values lat = %.5f, lon = %.5f (%.2f hours late)" % (lat, lon, delta_hours))
-        else:
-            print ("[gps] ERROR No GPS data available.  Failed to read backup file %s.  Skipping..." % gps_data_filename)
-            
+        print ("[gps] GPS NOK")
 
 
 if __name__ == '__main__':
