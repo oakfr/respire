@@ -1,4 +1,7 @@
 import sys
+from ABE_ADCPi import ADCPi
+from ABE_helpers import ABEHelpers
+import os
 from time import sleep
 import lcm
 import time
@@ -7,32 +10,38 @@ import serial
 from exlcm import gaz_t
 
 def init_nox ():
-    print ("initializing NOx reader...")
-    try:
-        s = serial.Serial("/dev/nox", 9600)
-        print ("success.")
-        return s
-    except:
-        print ("Failed to init NOx")
-        return None
-
+    i2c_helper = ABEHelpers()
+    bus = i2c_helper.get_smbus()
+    adc = ADCPi(bus, 0x6A, 0x6B, 12)
+    return adc
 
 def is_valid (mes):
-    if (not 'PM1' in mes) or (not 'PM2.5' in mes) or (not 'PM10' in mes):
-        return False
-    if mes['PM1'] < 1E-6 or mes['PM2.5'] < 1E-6 or mes['PM10'] < 1E-6:
-        return False
     return True
 
 
+def get_n_factors ():
+    # at 20 deg.
+    return (1.35, 1.28)
+
 def get_measurement (nox_reader):
-    line = nox_reader.readline()
-    try:
-        elements = [float(el.strip()) for el in line.split(',')]
-    except:
-        return (0,0,False)
-    no2 = elements[-2]
-    o3 = elements[-1]
+    sn1_we = nox_reader.read_voltage (3)
+    sn1_ae = nox_reader.read_voltage (4)
+    sn2_we = nox_reader.read_voltage (1)
+    sn2_ae = nox_reader.read_voltage (2)
+    (n_sn1, n_sn2) = get_n_factors ()
+    sn1_ae *= n_sn1
+    sn2_ae *= n_sn2
+    calibration_file = "nox-calibration.txt"
+    (sn1_we_off, sn1_ae_off, sn1_sens, sn1_nox_sens,\
+     sn2_we_off, sn2_ae_off, sn2_sens, sn2_nox_sens) = \
+    [float (a) for a in open(calibration_file,"r").readlines()]
+    no2 = 0
+    o3 = 0
+    sn1 = (sn1_we - sn1_we_off) - (sn1_ae - sn1_ae_off)
+    sn2 = (sn2_we - sn2_we_off) - (sn2_ae - sn2_ae_off)
+    no2 = sn1 / sn1_sens
+    o3 = sn2 / sn2_sens
+    print (no2, o3)
     return (no2, o3, True)
 
 

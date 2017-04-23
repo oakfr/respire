@@ -73,12 +73,15 @@ def send_gps_signal (lc, lat, lon):
         print ("[gps] GPS OK.  lat = %.5f, lon = %.5f" % (lat, lon))
     else:
         print ("[gps] GPS NOK")
+        print(lat)
+        print(lon)
 
 
 if __name__ == '__main__':
   gpsp = GpsPoller() # create the thread
   lc = lcm.LCM()
   try:
+    print("starting gps...")
     gpsp.start() # start it up
     while True:
       #It may take a second or two to get good data

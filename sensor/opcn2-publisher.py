@@ -78,8 +78,9 @@ def main ():
         while True:
             if opc_reader is None:
                 opc_reader = init_opc ()
-            (pm1, pm25, pm10) = get_measurement (opc_reader)
-            send_particles_signal(lc, pm1, pm25, pm10)
+            if opc_reader is not None:
+                (pm1, pm25, pm10) = get_measurement (opc_reader)
+                send_particles_signal(lc, pm1, pm25, pm10)
             time.sleep(2)
     except KeyboardInterrupt:
         if opc_reader is not None:
