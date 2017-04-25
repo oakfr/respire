@@ -19,30 +19,68 @@ def is_valid (mes):
     return True
 
 
-def get_n_factors ():
-    # at 20 deg.
-    return (1.35, 1.28)
+def read_calibration_file ():
+    filename = 'calib-nox.json'
+    data = json.loads (open (filename,'r').read())
+    sn1_data = data['sensor 1 (no2)']
+    sn1_we_elec_offset = float(sn1_data['WE electronic offset'])
+    sn1_ae_elec_offset = float(sn1_data['AE electronic offset'])
+    sn1_we_total_zero_offset = float(sn1_data['WE total zero offset'])
+    sn1_ae_total_zero_offset = float(sn1_data['AE total zero offset'])
+    sn1_we_sensitivity = float(sn1_data['WE sensitivity'])
+    sn2_data = data['sensor 2 (ox)']
+    sn2_we_elec_offset = float(sn2_data['WE electronic offset'])
+    sn2_ae_elec_offset = float(sn2_data['AE electronic offset'])
+    sn2_we_total_zero_offset = float(sn2_data['WE total zero offset'])
+    sn2_ae_total_zero_offset = float(sn2_data['AE total zero offset'])
+    sn2_we_sensitivity = float(sn2_data['WE sensitivity'])
+    return (sn1_we_elec_offset, sn1_ae_elec_offset, sn1_we_total_zero_offset, sn1_ae_total_zero_offset, sn1_we_sensitivity, \
+            sn2_we_elec_offset, sn2_ae_elec_offset, sn2_we_total_zero_offset, sn2_ae_total_zero_offset, sn2_we_sensitivity)
 
-def get_measurement (nox_reader):
-    sn1_we = nox_reader.read_voltage (3)
-    sn1_ae = nox_reader.read_voltage (4)
-    sn2_we = nox_reader.read_voltage (1)
-    sn2_ae = nox_reader.read_voltage (2)
-    (n_sn1, n_sn2) = get_n_factors ()
-    sn1_ae *= n_sn1
-    sn2_ae *= n_sn2
-    calibration_file = "nox-calibration.txt"
-    (sn1_we_off, sn1_ae_off, sn1_sens, sn1_nox_sens,\
-     sn2_we_off, sn2_ae_off, sn2_sens, sn2_nox_sens) = \
-    [float (a) for a in open(calibration_file,"r").readlines()]
-    no2 = 0
-    o3 = 0
-    sn1 = (sn1_we - sn1_we_off) - (sn1_ae - sn1_ae_off)
-    sn2 = (sn2_we - sn2_we_off) - (sn2_ae - sn2_ae_off)
-    no2 = sn1 / sn1_sens
-    o3 = sn2 / sn2_sens
-    print (no2, o3)
-    return (no2, o3, True)
+
+def get_correction_factor_no2_nt (temperature):
+    # round to nearest 10 degrees
+    temp10 = int(round (1.0 * temperature / 10))*10
+    lut = {-30: .8, -20: .8, -10: 1, 0: 1.2, 10:1.6, 20:1.8, 30:1.9, 40:2.5, 50:3.6}
+    return lut[temp10]
+
+
+def get_correction_factor_ox_kpt (temperature):
+    # round to nearest 10 degrees
+    temp10 = int(round (1.0 * temperature / 10))*10
+    lut = {-30: .1, -20: .1, -10: .2, 0: .3, 10: .7, 20:1, 30:1.7, 40:3, 50:4}
+    return lut[temp10]
+
+
+def calibrate (we_sn1, ae_sn1, we_sn2, ae_sn2, calib_data, temperature=22):
+    """ return calibrated measurement in ppb.
+        sensor 1 is NO2, sensor 2 is O3 """
+    (sn1_wee, sn1_aee, sn1_wet, sn1_aet, sn1_we_sens, sn2_wee, sn2_aee, sn2_wet, sn2_aet, sn2_we_sens) = calib_data
+    # suggested algorithm for type A NO2: 1
+    we_sn1 -= sn1_wee
+    ae_sn1 -= sn1_aee
+    nt = get_correction_factor_no2_nt (temperature)
+    we_sn1 -= nt * ae_sn1
+    no2_ppb = we_sn1 / sn1_we_sens
+    # suggested algorithm for type A OX: 3
+    sn2_we0 = sn2_wet - sn2_wee
+    sn2_ae0 = sn2_aet - sn2_aee
+    kpt = get_correction_factor_ox_kpt (temperature)
+    we_sn2 -= sn2_wee
+    ae_sn2 -= sn2_aee
+    we_sn2 -= (sn2_we0 - sn2_ae0) + kpt * ae_sn2
+    o3_ppb = we_sn2 / sn2_we_sens
+    return (no2_ppb, o3_ppb)
+
+
+def get_measurement (nox_reader, calib_data):
+    we_sn1 = nox_reader.read_voltage (3)
+    ae_sn1 = nox_reader.read_voltage (4)
+    we_sn2 = nox_reader.read_voltage (1)
+    ae_sn2 = nox_reader.read_voltage (2)
+    # todo add temperature here
+    (no2_ppb, o3_ppb) = calibrate (we_sn1, ae_sn1, we_sn2, ae_sn2, calib_data)
+    return (no2_ppb, o3_ppb, True)
 
 
 def send_gaz_signal (lc, no2, o3):
@@ -59,12 +97,13 @@ def send_gaz_signal (lc, no2, o3):
 def main ():
     lc = lcm.LCM()
     nox_reader = init_nox ()
+    calib_data = read_calibration_file()
 
     try:
         while True:
             if nox_reader is None:
                 nox_reader = init_nox ()
-            (no2, o3, is_valid) = get_measurement (nox_reader)
+            (no2, o3, is_valid) = get_measurement (nox_reader, calib_data)
             if is_valid:
                 send_gaz_signal(lc, no2, o3)
             time.sleep(2)

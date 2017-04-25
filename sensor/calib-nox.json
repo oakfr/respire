@@ -1,0 +1,17 @@
+{
+    "sensor 1 (no2)": {
+        "WE electronic offset":100,
+        "AE electronic offset":100,
+        "WE total zero offset": 100,
+        "AE total zero offset": 100,
+        "WE sensitivity": ".3"
+    },
+    "sensor 2 (ox)": {
+        "WE electronic offset":100,
+        "AE electronic offset":100,
+        "WE total zero offset": 100,
+        "AE total zero offset": 100,
+        "WE sensitivity": ".3"
+    }
+}
+
