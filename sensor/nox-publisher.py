@@ -10,16 +10,15 @@ import serial
 from exlcm import gaz_t
 
 def init_nox ():
+    """ init the sensor reader """
     i2c_helper = ABEHelpers()
     bus = i2c_helper.get_smbus()
     adc = ADCPi(bus, 0x6A, 0x6B, 12)
     return adc
 
-def is_valid (mes):
-    return True
-
 
 def read_calibration_file ():
+    """ read calibration parameters from file """
     filename = 'calib-nox.json'
     data = json.loads (open (filename,'r').read())
     sn1_data = data['sensor 1 (no2)']
@@ -39,6 +38,7 @@ def read_calibration_file ():
 
 
 def get_correction_factor_no2_nt (temperature):
+    """ look up correction factor for NO2 sensor """
     # round to nearest 10 degrees
     temp10 = int(round (1.0 * temperature / 10))*10
     lut = {-30: .8, -20: .8, -10: 1, 0: 1.2, 10:1.6, 20:1.8, 30:1.9, 40:2.5, 50:3.6}
@@ -46,6 +46,7 @@ def get_correction_factor_no2_nt (temperature):
 
 
 def get_correction_factor_ox_kpt (temperature):
+    """ look up correction factor for O3 sensor """
     # round to nearest 10 degrees
     temp10 = int(round (1.0 * temperature / 10))*10
     lut = {-30: .1, -20: .1, -10: .2, 0: .3, 10: .7, 20:1, 30:1.7, 40:3, 50:4}
@@ -53,7 +54,7 @@ def get_correction_factor_ox_kpt (temperature):
 
 
 def calibrate (we_sn1, ae_sn1, we_sn2, ae_sn2, calib_data, temperature=22):
-    """ return calibrated measurement in ppb.
+    """ convert voltage readings into measurements in ppb.
         sensor 1 is NO2, sensor 2 is O3 """
     (sn1_wee, sn1_aee, sn1_wet, sn1_aet, sn1_we_sens, sn2_wee, sn2_aee, sn2_wet, sn2_aet, sn2_we_sens) = calib_data
     # suggested algorithm for type A NO2: 1
@@ -74,6 +75,7 @@ def calibrate (we_sn1, ae_sn1, we_sn2, ae_sn2, calib_data, temperature=22):
 
 
 def get_measurement (nox_reader, calib_data):
+    """ read voltage and convert to ppb measures """
     we_sn1 = nox_reader.read_voltage (3)
     ae_sn1 = nox_reader.read_voltage (4)
     we_sn2 = nox_reader.read_voltage (1)
@@ -84,7 +86,7 @@ def get_measurement (nox_reader, calib_data):
 
 
 def send_gaz_signal (lc, no2, o3):
-
+    """ send gas signal via LCM """
     msg = gaz_t()
     msg.timestamp = int(time.time())
     msg.no2 = no2
